@@ -102,8 +102,7 @@ public class OcrDesktopFrame extends javax.swing.JFrame {
         // TODO add your handling code here:
         OcrModel ocrModel;
         if (evt.getSource() == Browse) {
-            ocrModel = new OcrModel();
-            OtsuBinarize ob = new OtsuBinarize();
+            ocrModel = new OcrModel();            
             //return image absolute path
             String img = ocrModel.getPassport();
             BufferedImage dimg;
@@ -117,9 +116,7 @@ public class OcrDesktopFrame extends javax.swing.JFrame {
 
             ImageIcon imageIcon = new ImageIcon(dimg);
             ImageLabel.setIcon(imageIcon);
-//            ImagePanel.setSize(ImagePanel.getWidth(), ImagePanel.getHeight());
-//            ImagePanel.setIcon(new ImageIcon(img));
-//            validate();            
+          
             //Return binarize image path 
             String convertedimg = ocrModel.ConvertImage(img);
             //Extract data string
