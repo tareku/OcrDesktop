@@ -5,10 +5,15 @@
  */
 package ocrdesktop;
 
-import java.awt.Image;
-import javax.swing.Icon;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import ocr.AppletModel.OcrModel;
+import ocr.AppletModel.OtsuBinarize;
 
 /**
  *
@@ -33,13 +38,12 @@ public class OcrDesktopFrame extends javax.swing.JFrame {
     private void initComponents() {
 
         Browse = new javax.swing.JButton();
-        ImagePanel = new javax.swing.JPanel();
-        ImageLabel = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         Output = new javax.swing.JTextArea();
+        ImagePanel = new javax.swing.JPanel();
+        ImageLabel = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setPreferredSize(new java.awt.Dimension(600, 400));
 
         Browse.setText("Browse");
         Browse.addActionListener(new java.awt.event.ActionListener() {
@@ -48,24 +52,22 @@ public class OcrDesktopFrame extends javax.swing.JFrame {
             }
         });
 
-        ImagePanel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+        Output.setColumns(20);
+        Output.setRows(5);
+        jScrollPane1.setViewportView(Output);
 
-        ImageLabel.setPreferredSize(new java.awt.Dimension(500, 500));
+        ImagePanel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
 
         javax.swing.GroupLayout ImagePanelLayout = new javax.swing.GroupLayout(ImagePanel);
         ImagePanel.setLayout(ImagePanelLayout);
         ImagePanelLayout.setHorizontalGroup(
             ImagePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(ImageLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 0, Short.MAX_VALUE)
+            .addComponent(ImageLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         ImagePanelLayout.setVerticalGroup(
             ImagePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(ImageLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 103, Short.MAX_VALUE)
+            .addComponent(ImageLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 306, Short.MAX_VALUE)
         );
-
-        Output.setColumns(20);
-        Output.setRows(5);
-        jScrollPane1.setViewportView(Output);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -78,19 +80,19 @@ public class OcrDesktopFrame extends javax.swing.JFrame {
                     .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                         .addComponent(Browse)
                         .addGap(0, 0, Short.MAX_VALUE))
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 335, Short.MAX_VALUE))
-                .addGap(35, 35, 35))
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 602, Short.MAX_VALUE))
+                .addGap(30, 30, 30))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addGap(20, 20, 20)
                 .addComponent(Browse)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 29, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(ImagePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(30, 30, 30))
+                .addContainerGap(37, Short.MAX_VALUE))
         );
 
         pack();
@@ -101,20 +103,42 @@ public class OcrDesktopFrame extends javax.swing.JFrame {
         OcrModel ocrModel;
         if (evt.getSource() == Browse) {
             ocrModel = new OcrModel();
+            OtsuBinarize ob = new OtsuBinarize();
             //return image absolute path
-            String img = ocrModel.getPassport();  
-            ImageLabel.setSize(ImageLabel.getWidth(), ImageLabel.getHeight());
-            ImageLabel.setIcon(new ImageIcon(img));
-            validate();            
+            String img = ocrModel.getPassport();
+            BufferedImage dimg;
+            BufferedImage imgg = null;
+            try {
+                imgg = ImageIO.read(new File(img));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            dimg = ResizedImage(imgg, ImageLabel.getWidth(), ImageLabel.getHeight());
+
+            ImageIcon imageIcon = new ImageIcon(dimg);
+            ImageLabel.setIcon(imageIcon);
+//            ImagePanel.setSize(ImagePanel.getWidth(), ImagePanel.getHeight());
+//            ImagePanel.setIcon(new ImageIcon(img));
+//            validate();            
             //Return binarize image path 
             String convertedimg = ocrModel.ConvertImage(img);
             //Extract data string
-            String r = ocrModel.dataExtract(convertedimg).toUpperCase();            
-            Output.setText(r);           
+            String r = ocrModel.dataExtract(convertedimg).toUpperCase();
+            Output.setText(r);
             //Delete binarize image
             ocrModel.deleteConvertedImg(convertedimg);
         }
     }//GEN-LAST:event_BrowseActionPerformed
+    //Resize image
+
+    public BufferedImage ResizedImage(BufferedImage img, int width, int heigth) {
+        BufferedImage resizedImage = new BufferedImage(width, heigth, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g2 = resizedImage.createGraphics();
+        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        g2.drawImage(img, 0, 0, width, heigth, null);
+        g2.dispose();
+        return resizedImage;
+    }
 
     /**
      * @param args the command line arguments
@@ -136,7 +160,7 @@ public class OcrDesktopFrame extends javax.swing.JFrame {
             java.util.logging.Logger.getLogger(OcrDesktopFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
-        
+
         //</editor-fold>
 
         /* Create and display the form */
