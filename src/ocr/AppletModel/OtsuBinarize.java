@@ -2,7 +2,6 @@ package ocr.AppletModel;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
-import java.awt.Image;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -46,7 +45,7 @@ public class OtsuBinarize {
         String extension = getExtension(path);
         File original_f = new File(path);
         String output_f = path + "_bin";
-        original = ImageIO.read(original_f);        
+        original = ImageIO.read(original_f);             
         grayscale = toGray(original);
         binarized = binarize(grayscale);      
         binarized = ResizedImage(binarized, 1200, 760);
